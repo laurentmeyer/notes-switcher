@@ -1,3 +1,7 @@
+import type { TFile, WorkspaceLeaf } from "obsidian";
+
+export type SwitchMode = "tabs" | "recent-files";
+
 export interface Settings {
     viewTypes: string[];
     showModal: boolean;
@@ -5,6 +9,7 @@ export interface Settings {
     stayInSplit: boolean;
     focusLeafOnKeyUp: boolean;
     useViewTypes: boolean;
+    switchMode: SwitchMode;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -14,12 +19,17 @@ export const DEFAULT_SETTINGS: Settings = {
     stayInSplit: true,
     focusLeafOnKeyUp: false, // opt-in for existing users
     useViewTypes: true,
+    switchMode: "tabs",
 };
 
 export const NEW_USER_SETTINGS: Partial<Settings> = {
     focusLeafOnKeyUp: true, // default for new users
     useViewTypes: false,
 };
+
+export type SwitchItem =
+    | { type: "leaf"; leaf: WorkspaceLeaf }
+    | { type: "recent-file"; file: TFile };
 
 declare module "obsidian" {
     interface App {

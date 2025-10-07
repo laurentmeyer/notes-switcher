@@ -1,11 +1,12 @@
-import { SuggestModal, WorkspaceLeaf } from "obsidian";
+import { SuggestModal } from "obsidian";
 import CycleThroughPanes from "./main";
+import { SwitchItem } from "./types";
 
-export class GeneralModal extends SuggestModal<string> {
+export class GeneralModal extends SuggestModal<SwitchItem> {
     resolve: (value: number) => void;
 
     constructor(
-        private leaves: WorkspaceLeaf[],
+        private items: SwitchItem[],
         private readonly plugin: CycleThroughPanes
     ) {
         super(app);
@@ -15,8 +16,9 @@ export class GeneralModal extends SuggestModal<string> {
         this.dimBackground = false;
         super.open();
 
-        this.chooser.setSelectedItem(1);
-        this.focusTab();
+        const initialIndex = this.items.length > 1 ? 1 : 0;
+        this.chooser.setSelectedItem(initialIndex);
+        this.focusItem();
 
         this.containerEl
             .getElementsByClassName("prompt-input-container")
@@ -27,12 +29,12 @@ export class GeneralModal extends SuggestModal<string> {
 
         this.scope.register(["Ctrl"], "Tab", (e) => {
             this.chooser.setSelectedItem(this.chooser.selectedItem + 1);
-            this.focusTab();
+            this.focusItem();
         });
 
         this.scope.register(["Ctrl", "Shift"], "Tab", (e) => {
             this.chooser.setSelectedItem(this.chooser.selectedItem - 1);
-            this.focusTab();
+            this.focusItem();
         });
 
         return new Promise((resolve) => {
@@ -44,17 +46,24 @@ export class GeneralModal extends SuggestModal<string> {
         if (this.resolve) this.resolve(this.chooser.selectedItem);
     }
 
-    getSuggestions(query: string): string[] {
-        return this.leaves.map((leaf) => leaf.view.getDisplayText());
+    getSuggestions(query: string): SwitchItem[] {
+        return this.items;
     }
 
-    renderSuggestion(value: string, el: HTMLElement): void {
-        el.setText(value);
+    renderSuggestion(item: SwitchItem, el: HTMLElement): void {
+        el.setText(this.plugin.getSwitchItemLabel(item));
     }
 
-    onChooseSuggestion(item: string, evt: MouseEvent | KeyboardEvent) {}
+    onChooseSuggestion(item: SwitchItem, evt: MouseEvent | KeyboardEvent) {
+        if (item) {
+            this.plugin.commitSwitchItem(item);
+        }
+    }
 
-    focusTab(): void {
-        this.plugin.queueFocusLeaf(this.leaves[this.chooser.selectedItem]);
+    focusItem(): void {
+        const item = this.items[this.chooser.selectedItem];
+        if (item) {
+            this.plugin.queueSwitchItem(item);
+        }
     }
 }

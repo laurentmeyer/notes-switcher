@@ -21,6 +21,23 @@ export default class CTPSettingTab extends PluginSettingTab {
         });
 
         new Setting(containerEl)
+            .setName("Cycle target")
+            .setDesc(
+                "Choose whether Ctrl/Cmd + Tab cycles open workspace tabs or recently opened files."
+            )
+            .addDropdown((dropdown) => {
+                dropdown
+                    .addOption("tabs", "Workspace tabs")
+                    .addOption("recent-files", "Recent files")
+                    .setValue(this.settings.switchMode)
+                    .onChange(async (value) => {
+                        this.settings.switchMode =
+                            value as Settings["switchMode"];
+                        await this.plugin.saveSettings();
+                    });
+            });
+
+        new Setting(containerEl)
             .setName("Only cycle through tabs with specific View Types")
             .addToggle((cb) => {
                 cb.setValue(this.settings.useViewTypes);
